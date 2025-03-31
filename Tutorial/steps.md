@@ -1,4 +1,6 @@
-# 0. Basic Setup and Clean Code Practices
+
+
+# 0. (1) Basic Setup and Clean Code Practices
 
 Setup a python virtual environment to run all the code in, so the dependencies don't polute the base python environment.
 
@@ -9,7 +11,7 @@ Run virtual env: `source venv/bin/activate`
 # 1. Download the Deepseek R1
 For this I chose the 1.5 B parameter version as I don't have that much compute, but you can choose any model size you want as long as your equipment can handle it.
 
-## A. Just make sure you find the model on hugging face and clone the files to your system.
+## A. (2) Just make sure you find the model on hugging face and clone the files to your system.
 On the model page go to the files and versions tab and click on the three dots in the upper right corner and then the "clone repository" button.
 
 For 1.5B I did:
@@ -20,7 +22,7 @@ For 1.5B I did:
 
 <img src="hf-download-deepseek.png" alt="Img Not Loaded"/>
 
-## B. You will likely need download the weights separately.
+## B. (3) You will likely need download the weights separately.
 So on that same page find the model safetensors download button (highlighted in the picture) and copy the link address.
 
 <img src="hf-download-btn.png" alt="Img Not Loaded"/>
@@ -106,3 +108,15 @@ wget https://raw.githubusercontent.com/huggingface/transformers/refs/heads/main/
 ```
 
 ## B. (7) Modify Generation Code To Directly Use The Model Files:
+
+
+The
+
+
+
+
+
+
+# 4. Code Titans Memory
+
+![Img Not Loaded](memory-math-titans.png)
