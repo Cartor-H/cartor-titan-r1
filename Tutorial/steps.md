@@ -97,24 +97,67 @@ In reality it's a bit more complicated than that as there's no guarantee R1-qwen
 I already aquired the links for you, but if you want to view the original source you can go
 to (Transformers' github)[https://github.com/huggingface/transformers/tree/main] and go to the (qwen2 model)[https://github.com/huggingface/transformers/tree/main/src/transformers/models/qwen2].
 
-Here's all the files you need to download:
-```
-wget https://github.com/huggingface/transformers/raw/refs/heads/main/src/transformers/models/qwen2/__init__.py
-wget https://raw.githubusercontent.com/huggingface/transformers/refs/heads/main/src/transformers/models/qwen2/configuration_qwen2.py
-wget https://github.com/huggingface/transformers/raw/refs/heads/main/src/transformers/models/qwen2/modeling_qwen2.py
-wget https://github.com/huggingface/transformers/raw/refs/heads/main/src/transformers/models/qwen2/modular_qwen2.py
-wget https://raw.githubusercontent.com/huggingface/transformers/refs/heads/main/src/transformers/models/qwen2/tokenization_qwen2.py
-wget https://raw.githubusercontent.com/huggingface/transformers/refs/heads/main/src/transformers/models/qwen2/tokenization_qwen2_fast.py
-```
+Now run the following command to clone the whole transformers library into the root folder of your project.
+
+`git clone git@github.com:huggingface/transformers.git`
 
 ## B. (7) Modify Generation Code To Directly Use The Model Files:
 
+Then modify your `run_model.py` file to generate the model straight from the source files. It should look like this:
 
-The
+```py
+# Import necessary classes from qwen2 source code
+from transformers.models.qwen2.tokenization_qwen2 import Qwen2Tokenizer
+from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
 
+local_model_path = "DeepSeek-R1-Distill-Qwen-1.5B"
 
+# Initialize the tokenizer and model from the local path
+tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path)
+model = Qwen2ForCausalLM.from_pretrained(local_model_path)
 
+# Encode the input text
+input_text = "What are you?\n"
+inputs = tokenizer(input_text, return_tensors="pt", padding=True)
+input_ids = inputs["input_ids"]
+attention_mask = inputs["attention_mask"]
 
+# Generate text
+print("\nGenerating text...\n")
+output = model.generate(input_ids, attention_mask=attention_mask, max_length=50, num_return_sequences=1)
+
+# Decode the generated text
+output_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+print("\nOutput Text:\n", output_text)
+```
+
+The main difference is that we changed the lines:
+```py
+# Load model directly from local path
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+local_model_path = "{PATH_TO_R1}/DeepSeek-R1-Distill-Qwen-1.5B"
+
+tokenizer = AutoTokenizer.from_pretrained(local_model_path)
+model = AutoModelForCausalLM.from_pretrained(local_model_path)
+```
+to
+```py
+# Import necessary classes from qwen2 source code
+from transformers.models.qwen2.tokenization_qwen2 import Qwen2Tokenizer
+from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
+
+local_model_path = "DeepSeek-R1-Distill-Qwen-1.5B"
+
+# Initialize the tokenizer and model from the local path
+tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path)
+model = Qwen2ForCausalLM.from_pretrained(local_model_path)
+```
+
+The important things to note are that we are now directly importing the Qwen2 architecture from it's spot (`transformers/src/models/qwen2/`) in the library. This will allows us to directly add to the model later.
+
+You may also have to install `protobuf` at this point.
 
 
 # 4. Code Titans Memory

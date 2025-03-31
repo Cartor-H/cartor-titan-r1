@@ -1,11 +1,20 @@
+from pathlib import Path
+
 # Import necessary classes from qwen2 source code
-from qwen2.tokenization_qwen2 import Qwen2Tokenizer
-from qwen2.modeling_qwen2 import Qwen2ForCausalLM
+from transformers.models.llama.tokenization_llama import LlamaTokenizer
+from transformers.models.qwen2.tokenization_qwen2 import Qwen2Tokenizer
+from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
+from transformers import AutoTokenizer
 
 local_model_path = "DeepSeek-R1-Distill-Qwen-1.5B"
 
-# Initialize the tokenizer and model from the local path
-tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path)
+# Load the tokenizer using tokenizer_config.json and tokenizer.json
+tokenizer_config_file = str(Path(local_model_path) / "tokenizer_config.json")
+tokenizer_file = str(Path(local_model_path) / "tokenizer.json")
+
+# tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path, vocab_file=tokenizer_config_file, merges_file=tokenizer_file)
+# tokenizer = LlamaTokenizer.from_pretrained(local_model_path)
+tokenizer = AutoTokenizer.from_pretrained(local_model_path)
 model = Qwen2ForCausalLM.from_pretrained(local_model_path)
 
 # Encode the input text
