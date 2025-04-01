@@ -1,17 +1,33 @@
 
 
-# 0. (1) Basic Setup and Clean Code Practices
+# 0. Basic Setup and Clean Code Practices
 
+## A. (1) Setting Up A Virtual Environment
 Setup a python virtual environment to run all the code in, so the dependencies don't polute the base python environment.
 
 Create virtual env: `python -m venv venv`
 
 Run virtual env: `source venv/bin/activate`
 
+## B. (2) Make a Requirements File
+Create a `requirements.txt` file in your projects root directory.
+
+Add the following lines to it.
+```
+transformers
+torch
+protobuf
+sentencepiece
+```
+
+## C. (3) Install All The Requirements
+
+run `pip3 install -r requirements.txt`
+
 # 1. Download the Deepseek R1
 For this I chose the 1.5 B parameter version as I don't have that much compute, but you can choose any model size you want as long as your equipment can handle it.
 
-## A. (2) Just make sure you find the model on hugging face and clone the files to your system.
+## A. (4) Just make sure you find the model on hugging face and clone the files to your system.
 On the model page go to the files and versions tab and click on the three dots in the upper right corner and then the "clone repository" button.
 
 For 1.5B I did:
@@ -22,7 +38,7 @@ For 1.5B I did:
 
 <img src="hf-download-deepseek.png" alt="Img Not Loaded"/>
 
-## B. (3) You will likely need download the weights separately.
+## B. (5) You will likely need download the weights separately.
 So on that same page find the model safetensors download button (highlighted in the picture) and copy the link address.
 
 <img src="hf-download-btn.png" alt="Img Not Loaded"/>
@@ -33,10 +49,7 @@ Then run `wget -O model.safetensors {link}` or for 1.5B parameter model:
 
 # 2. Test that the R1 is working locally
 
-## A. (4) Make sure that the *Transformers* and *PyTorch* libraries are installed:
-`pip3 install transformers torch`
-
-## B. (5) Make the code to run R1 locally:
+## A. (6) Make the code to run R1 locally:
 
 Make the file `run_model.py` and paste the following code into it.
 
@@ -92,7 +105,7 @@ it was called R1-qwen-1.5b, as it's weights (or "neurons") were diferent while t
 
 In reality it's a bit more complicated than that as there's no guarantee R1-qwen-1.5b is the same size as the original qwen2, but they both use the same layer types ("neron types"), which saves the R1 team from having to develop a brand new architecture to train their small model.
 
-## A. (6) Download The Source Code:
+## A. (7) Download The Source Code:
 
 I already aquired the links for you, but if you want to view the original source you can go
 to (Transformers' github)[https://github.com/huggingface/transformers/tree/main] and go to the (qwen2 model)[https://github.com/huggingface/transformers/tree/main/src/transformers/models/qwen2].
@@ -101,19 +114,19 @@ Now run the following command to clone the whole transformers library into the r
 
 `git clone git@github.com:huggingface/transformers.git`
 
-## B. (7) Modify Generation Code To Directly Use The Model Files:
+## B. (8) Modify Generation Code To Directly Use The Model Files:
 
 Then modify your `run_model.py` file to generate the model straight from the source files. It should look like this:
 
 ```py
 # Import necessary classes from qwen2 source code
-from transformers.models.qwen2.tokenization_qwen2 import Qwen2Tokenizer
 from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
+from transformers import AutoTokenizer
 
 local_model_path = "DeepSeek-R1-Distill-Qwen-1.5B"
 
 # Initialize the tokenizer and model from the local path
-tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path)
+tokenizer = AutoTokenizer.from_pretrained(local_model_path)
 model = Qwen2ForCausalLM.from_pretrained(local_model_path)
 
 # Encode the input text
@@ -145,13 +158,13 @@ model = AutoModelForCausalLM.from_pretrained(local_model_path)
 to
 ```py
 # Import necessary classes from qwen2 source code
-from transformers.models.qwen2.tokenization_qwen2 import Qwen2Tokenizer
 from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
+from transformers import AutoTokenizer
 
 local_model_path = "DeepSeek-R1-Distill-Qwen-1.5B"
 
 # Initialize the tokenizer and model from the local path
-tokenizer = Qwen2Tokenizer.from_pretrained(local_model_path)
+tokenizer = AutoTokenizer.from_pretrained(local_model_path)
 model = Qwen2ForCausalLM.from_pretrained(local_model_path)
 ```
 
@@ -159,7 +172,30 @@ The important things to note are that we are now directly importing the Qwen2 ar
 
 You may also have to install `protobuf` at this point.
 
+## C. (9) Make Sure R1 Still Works Locally
 
-# 4. Code Titans Memory
+Run the code in the termnial via `python3 run_model.py` and the output should look something like this:
+```
+Sliding Window Attention is enabled but not implemented for `sdpa`; unexpected results may be encountered.
+
+Generating text...
+
+Setting `pad_token_id` to `eos_token_id`:151643 for open-end generation.
+
+Output Text:
+ What are you?
+<think>
+
+</think>
+
+Greetings! I'm DeepSeek-R1, an artificial intelligence assistant created by DeepSeek. I'm at your service and would be delighted to assist you with any inquiries or tasks you may have.
+(venv) cartorh@lambda-lab-machine:~/Desktop/cartor-titan-r1$ git add *
+```
+
+# 4. (10) Code Titans Memory
 
 ![Img Not Loaded](memory-math-titans.png)
+
+You will need to implement a recurrent layer M that stores the "memory" of the model. M will decay by 1-alpha every token, where alpha is a learnable parameter. The decayed memory will be summed with a suprise metric, S.
+
+S will also be updated every token (before M is). S also has it's own learnable decay parameter, n. The decayed old loss is increased by the negative of the derivative of loss (as delta loss is already negative, this should make a positive). The intention of using the negative delta loss (derivative of loss) is that the more suprising something is the more negative the delta loss should be.
